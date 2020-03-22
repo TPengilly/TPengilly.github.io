@@ -1,0 +1,217 @@
+---
+title: "NewShinyApp"
+author: "Thomas Pengilly"
+date: "3/22/2020"
+output: html_document
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r echo = FALSE}
+library(shiny)
+library(rmarkdown)
+library(ggplot2)
+
+ui <- fluidPage(
+  
+  # App title
+  titlePanel('Beer Case Study App'),
+  
+  # Sidebar layout with input and output definitions
+  sidebarLayout(
+    
+    sidebarPanel(
+      
+      # Input File
+      fileInput('file', 'Choose CSV File',
+                multiple = F,
+                accept = c("text/csv",
+                           "text/comma-seperated-values, text/plain",
+                           ".csv")),
+      # Horizontal line
+      tags$hr(),
+      
+      # Input: check for header
+      checkboxInput('header', 'Header', TRUE),
+      
+      # Horiz line
+      tags$hr(),
+      
+      # Input display data
+      radioButtons('disp', 'Display',
+                   choices = c(Head = 'head',
+                               All = 'all'),
+                   selected = 'head'),
+      
+      # Select histogram or boxplot
+      selectInput('select', label = h3('Plot Type'),
+                  choices = list('Histogram' = 'histogram', 'Boxplot' = 'boxplot'),
+                  selected = 1),
+                  hr(),
+                  fluidRow(column(3, verbatimTextOutput('value'))),
+      
+      # Slider input for IBU bins
+      sliderInput(inputId = 'ibubins',
+                  label = 'Number of IBU Bins:',
+                  min = 1,
+                  max = 50,
+                  value = 30),
+      
+      # Slider input for ABV bins
+      sliderInput(inputId = 'abvbins',
+                  label = 'Number of ABVbins:',
+                  min = 1,
+                  max = 50,
+                  value = 30),
+      
+      # Check for linear regression line
+      checkboxInput('regline', 'Regression Line', F)
+      
+      # # Select Heat map data
+      # selectInput('HMdata', label = h3('Heat Map Data'),
+      #             choices = list('Max IBU' = 'maxibu', 'Max ABV' = 'maxabv'),
+      #             selected = 1),
+      #             hr(),
+      #             fluidRow(column(3, verbatimTextOutput('value')))
+      
+    ), # end sidebar panel
+    
+    # Main panel for displaying outputs
+    mainPanel(
+      
+      # Output: Data file
+      tableOutput('contents'),
+      
+      # Output IBU Histogram
+      plotOutput(outputId = 'ibuplot'),
+      
+      # Output ABV Histogram
+      plotOutput(outputId = 'abvplot'),
+      
+      # Output Scatterplot
+      plotOutput(outputId = 'scatter')
+      
+      # Output Heat map
+      #plotOutput(outputId = 'heatmap')
+    )
+  )
+)
+
+
+
+
+
+
+
+# Define server logic required to draw a histogram
+server <- function(input, output) {
+  
+  output$contents <- renderTable({
+    
+    req(input$file)
+    
+    df <- read.csv(input$file$datapath,
+                   header = input$header)
+    
+    if(input$disp == 'head')
+    {
+      return(head(df))
+    }
+    else {
+      return(df)
+    }
+  })
+  
+  # Plot IBU data
+  
+  output$ibuplot <- renderPlot({
+    if(input$select == 'histogram') {
+      x <- dataset$IBU
+      bins <- seq(min(x), max(x), length.out = input$ibubins + 1)
+      
+      hist(x, breaks = bins, col = '#75AADB', border = 'white',
+           xlab = 'Internation Bitterness Units Rating (IBU)',
+           main = 'Distribution of IBU')
+    }
+    if(input$select == 'boxplot') {
+      x <- dataset$IBU
+      boxplot(x, xlab = 'IBU', main = 'Boxplot of IBU')
+    }
+  })
+  
+  # Plot of ABV data
+  
+  output$abvplot <- renderPlot({
+    
+    if(input$select == 'histogram') {
+      x <- dataset$ABV
+      bins <- seq(min(x), max(x), length.out = input$abvbins + 1)
+      
+      hist(x, breaks = bins, col = '#75AADB', border = 'white',
+           xlab = 'Alcohol by Volume (ABV)',
+           main = 'Distribution of ABV')
+    }
+    if(input$select == 'boxplot') {
+      x <- dataset$ABV
+      boxplot(x, xlab = 'ABV', main = 'Boxplot of ABV')
+    }
+  })
+  
+  # Scatter plot
+  
+  output$scatter <- renderPlot({
+    
+    if(input$regline == TRUE) {
+      x = dataset$IBU
+      y = dataset$ABV
+    
+      dataset %>% ggplot(aes(x = x, y = y)) + geom_point() + ggtitle('Scatter Plot of IBU vs ABV') + xlab('IBU') +  ylab('ABV') +
+        stat_smooth(method = 'lm', se = FALSE)
+    }
+    
+    if(input$regline == FALSE) {
+      x = dataset$IBU
+      y = dataset$ABV
+    
+      dataset %>% ggplot(aes(x = x, y = y)) + geom_point() + ggtitle('Scatter Plot of IBU vs ABV') + xlab('IBU') +  ylab('ABV')
+    }
+  })
+  
+  # Heatmap
+  
+  # output$heatmap <- renderPlot({
+  #   
+  #   if(input$HMdata == 'maxibu') {
+  #     ggplot(map.df, aes(x=long,y=lat,group=group)) + 
+  #     geom_polygon(aes(fill=maxIBU)) +
+  #     geom_path() + 
+  #     scale_fill_gradientn(colours=rev(rainbow(10)),na.value="grey90") +
+  #     ggtitle("Max IBU in Each State") +  
+  #     coord_map() + 
+  #     theme(plot.title = element_text(hjust = 0.5)) +
+  #     labs(fill = 'IBU Rating')
+  #   }
+  #   
+  #   if(input$HMdata == 'maxabv') {
+  #     ggplot(map.df, aes(x=long,y=lat,group=group)) + 
+  #     geom_polygon(aes(fill=maxABV)) +
+  #     geom_path() + 
+  #     scale_fill_gradientn(colours=rev(rainbow(10)),na.value="grey90") +
+  #     ggtitle("Max ABV in Each State") +  
+  #     coord_map() + 
+  #     theme(plot.title = element_text(hjust = 0.5)) + 
+  #     labs(fill = 'ABV (%)')
+  #   }
+  # })
+}
+
+shinyApp(ui, server)
+```
+
+
+
+
+

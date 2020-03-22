@@ -1,0 +1,20 @@
+---
+title: "Simple Website"
+author: "Thomas Pengilly"
+date: "3/20/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# About Me
+### My name is Tom Pengilly
+### I'm from Pittsburgh, Pennsylvania and I'm a student at SMU
+### I'm interested in deep learning and artificial intelligence
+
+## The other tabs represent my work and analyses that I have completed.  Please check them out!
+
+
+
