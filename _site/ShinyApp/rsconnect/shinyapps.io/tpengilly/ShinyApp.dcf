@@ -1,0 +1,13 @@
+name: ShinyApp
+title: ShinyApp
+username:
+account: tpengilly
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 1977618
+bundleId: 2909116
+url: https://tpengilly.shinyapps.io/ShinyApp/
+when: 1584899011.02141
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: Data/BeerData.rds
