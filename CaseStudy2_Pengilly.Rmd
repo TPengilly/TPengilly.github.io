@@ -1,0 +1,1132 @@
+---
+title: "DDS Case Study 2"
+author: "Thomas Pengilly"
+date: "3/28/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Case Study 2: Tom Pengilly
+# Youtube link: https://youtu.be/7yLpNzwe0EI
+
+################################################################# Summary ############################################################################
+This file is for DDS Case Study 2. It explores employee attrition data provided by Frito-Lay to create to create multiple predictive models.  The first 2 are classification algorithms (Naive-Bayes and logistic regression classifiers) that predict whether an employee will quit. The next 2 are regression algorithms that predict an employees salary.
+######################################################################################################################################################
+
+### Section 1 ###
+
+# Perform an EDA of Case Study 2 data in order to:
+# Find the top 3 factors contributing to job attrition (may or may not be derived factors)
+# Provide any job specific trends
+# Provide any other interesting findings
+# Provide clear visualizations 
+
+# Load initial libraries
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(GGally)
+library(scales)
+library(reshape2)
+library(standardize)
+```
+
+# Read in the data, create data subsets
+```{r}
+data = read.csv('C:/Users/Tpeng/OneDrive/Documents/SMU/Doing Data Science/Case Study 2/Unit 14 and 15 Case Study 2/CaseStudy2-data.csv', header = T)
+data_left = data %>% filter(Attrition == 'Yes')
+data_stayed = data %>% filter(Attrition == 'No')
+data
+```
+
+########################################################### EDA ######################################################################
+
+# GGally Correlation Matrix to explore initial corrlations
+```{r}
+ggpairs(data, columns = c(3, 2, 4:6), title = 'Correlation Matrix', ggplot2::aes(color = data$Attrition))
+```
+
+```{r}
+ggpairs(data, columns = c(3, 2, 7:10), title = 'Correlation Matrix', ggplot2::aes(color = data$Attrition))
+```
+
+# Explore variables
+
+######### Years with current manager
+```{r}
+ggpairs(data, columns = c(3, 36), ggplot2::aes(color = data$Attrition))
+```
+
+######### Years Since promotion
+```{r}
+ggpairs(data, columns = c(3, 35), ggplot2::aes(color = data$Attrition))
+```
+
+######### Years in current role
+```{r}
+ggpairs(data, columns = c(3, 34), ggplot2::aes(color = data$Attrition))
+```
+
+######### Years at company
+```{r}
+ggpairs(data, columns = c(3, 33), ggplot2::aes(color = data$Attrition))
+```
+
+######### Work Life Balance
+```{r}
+ggpairs(data, columns = c(3, 32), ggplot2::aes(color = data$Attrition))
+```
+
+########### Training times last year
+```{r}
+ggpairs(data, columns = c(3, 31), ggplot2::aes(color = data$Attrition))
+```
+
+########### Total Working Years BLUE IS QUIT JOB
+```{r}
+ggpairs(data, columns = c(3, 30), ggplot2::aes(color = data$Attrition))
+```
+
+######### Stock Options
+```{r}
+ggpairs(data, columns = c(3, 29), ggplot2::aes(color = data$Attrition))
+```
+
+######### Relationship satisfaction
+```{r}
+ggpairs(data, columns = c(3, 27), ggplot2::aes(color = data$Attrition))
+```
+
+######### Performance Rating
+```{r}
+ggpairs(data, columns = c(3, 26), ggplot2::aes(color = data$Attrition))
+```
+
+######### Percent salary hike
+```{r}
+ggpairs(data, columns = c(3, 25), ggplot2::aes(color = data$Attrition))
+```
+
+######### Over Time
+# Won't knit properly
+```{r}
+#ggpairs(data, columns = c(3, 24), ggplot2::aes(color = data$Attrition))
+#data %>% ggplot(aes(x = data$Attrition, y = n, fill = OverTime)) + geom_bar(stat = 'identity')
+```
+
+######### Num Companies Worked
+```{r}
+ggpairs(data, columns = c(3, 22), ggplot2::aes(color = data$Attrition))
+```
+
+######### Monthly Rate
+```{r}
+ggpairs(data, columns = c(3, 21), ggplot2::aes(color = data$Attrition))
+```
+
+######### Monthly Income
+```{r}
+ggpairs(data, columns = c(3, 20), ggplot2::aes(color = data$Attrition), legend = 3)
+```
+
+######### Marital Status
+```{r}
+ggpairs(data, columns = c(3, 19), ggplot2::aes(color = data$Attrition))
+```
+
+######### Job Satisfaction
+```{r}
+data2 = data
+data2$JobSatisfaction = as.numeric(data2$JobSatisfaction)
+ggpairs(data2, columns = c(3, 18), ggplot2::aes(color = data$Attrition), legend = 3)
+```
+
+######### Job Role
+```{r}
+ggpairs(data, columns = c(3, 17), ggplot2::aes(color = data$Attrition))
+```
+
+######### Job Level
+```{r}
+ggpairs(data, columns = c(3, 16), ggplot2::aes(color = data$Attrition))
+```
+
+######### Job Involvement
+```{r}
+data2 = data
+data2$JobInvolvement = as.factor(data2$JobInvolvement)  
+ggpairs(data2, columns = c(3, 15), ggplot2::aes(color = data$Attrition))
+```
+
+######### Hourly Rate
+```{r}
+ggpairs(data, columns = c(3, 14), ggplot2::aes(color = data$Attrition))
+```
+
+######### Gender
+```{r}
+ggpairs(data, columns = c(3, 13), ggplot2::aes(color = data$Attrition))
+```
+
+######### Environment Satisfaction
+```{r}
+ggpairs(data, columns = c(3, 12), ggplot2::aes(color = data$Attrition))
+```
+
+######### Employee Number
+```{r}
+ggpairs(data, columns = c(3, 11), ggplot2::aes(color = data$Attrition))
+```
+
+######### Education Field
+```{r}
+ggpairs(data, columns = c(3, 9), ggplot2::aes(color = data$Attrition))
+```
+
+######### Education
+```{r}
+ggpairs(data, columns = c(3, 8), ggplot2::aes(color = data$Attrition))
+```
+
+######### Distance From Home
+```{r}
+ggpairs(data, columns = c(3, 7), ggplot2::aes(color = data$Attrition))
+```
+
+######### Deparment
+```{r}
+ggpairs(data, columns = c(3, 6), ggplot2::aes(color = data$Attrition))
+```
+
+######### Daily Rate
+```{r}
+ggpairs(data, columns = c(3, 5), ggplot2::aes(color = data$Attrition))
+```
+
+######### Business Travel
+```{r}
+ggpairs(data, columns = c(3, 4), ggplot2::aes(color = data$Attrition))
+```
+
+######### Age
+```{r}
+ggpairs(data, columns = c(3, 2), ggplot2::aes(color = data$Attrition))
+```
+
+
+
+
+
+
+
+######################################################################################################################################################
+######################################################################################################################################################
+
+# Job Specific analysis Environment satisfaction
+```{r}
+env_count = data %>% group_by(JobRole) %>% count(EnvironmentSatisfaction)
+data %>% ggplot() + geom_boxplot(aes(x = data$JobRole, y = data$EnvironmentSatisfaction, color = data$JobRole)) + coord_flip()
+env_count %>% mutate(pct = prop.table(n)) %>% ggplot(aes(fill = EnvironmentSatisfaction, y = n, x = JobRole, label = scales::percent(pct))) + geom_bar(position = 'dodge', stat = 'identity') + coord_flip() + ggtitle('Environment Satisfaction By Job Role')  + geom_text(position = position_dodge(width = .9), vjust = -0.2, size = 3)
+```
+
+# Job Involvement vs attrition
+```{r}
+job_inv = data2 %>% group_by(JobInvolvement) %>% count(Attrition)
+job_inv %>% ggplot() + geom_boxplot(aes(x = job_inv$JobInvolvement, y = job_inv$Attrition, color = job_inv$JobInvolvement)) + coord_flip()
+job_inv %>% mutate(pct = prop.table(n)) %>% ggplot(aes(fill = Attrition, y = n, x = JobInvolvement, label = scales::percent(pct))) + geom_bar(position = 'dodge', stat = 'identity') + coord_flip() + ggtitle('Attrition by Job Involvement')  + geom_text(position = position_dodge(width = .9), vjust = -0.2, size = 5)
+```
+
+# Job Level vs attrition
+```{r}
+job_inv = data2 %>% group_by(JobLevel) %>% count(Attrition)
+job_inv %>% ggplot() + geom_boxplot(aes(x = job_inv$JobLevel, y = job_inv$Attrition, color = job_inv$JobLevel)) + coord_flip()
+job_inv %>% mutate(pct = prop.table(n)) %>% ggplot(aes(fill = Attrition, y = n, x = JobLevel, label = scales::percent(pct))) + geom_bar(position = 'dodge', stat = 'identity') + coord_flip() + ggtitle('Attrition by Job Level')  + geom_text(position = position_dodge(width = .9), vjust = -0.2, size = 5)
+```
+
+# Job Role vs attrition
+```{r}
+dept_att = data2 %>% group_by(JobRole) %>% count(Attrition)
+dept_att %>% ggplot() + geom_boxplot(aes(x = dept_att$JobRole, y = dept_att$Attrition, color = dept_att$JobRole)) + coord_flip()
+dept_att %>% mutate(pct = prop.table(n)) %>% ggplot(aes(fill = Attrition, y = n, x = JobRole, label = scales::percent(pct))) + geom_bar(position = 'dodge', stat = 'identity') + coord_flip() + ggtitle('Attrition by Job Role')  + geom_text(position = position_dodge(width = .9), vjust = -0.2, size = 4)
+```
+
+# Job Role vs Overtime
+```{r}
+dept_att = data2 %>% group_by(JobRole) %>% count(OverTime)
+dept_att %>% ggplot() + geom_boxplot(aes(x = dept_att$JobRole, y = dept_att$OverTime, color = dept_att$JobRole)) + coord_flip()
+dept_att %>% mutate(pct = prop.table(n)) %>% ggplot(aes(fill = OverTime, y = n, x = JobRole, label = scales::percent(pct))) + geom_bar(position = 'dodge', stat = 'identity') + coord_flip() + ggtitle('OverTime by Job Role')  + geom_text(position = position_dodge(width = .9), vjust = -0.2, size = 4)
+```
+
+# Attrition vs Overtime
+```{r}
+OT_att = data2 %>% group_by(Attrition) %>% count(OverTime)
+OT_att %>% ggplot() + geom_boxplot(aes(x = OT_att$Attrition, y = OT_att$OverTime, color = OT_att$Attrition)) + coord_flip()
+OT_att %>% mutate(pct = prop.table(n)) %>% ggplot(aes(fill = OverTime, y = n, x = Attrition, label = scales::percent(pct))) + geom_bar(position = 'dodge', stat = 'identity') + coord_flip() + ggtitle('Attrition vs Overtime')  + geom_text(position = position_dodge(width = .9), vjust = -0.2, size = 4)
+```
+
+# Job Specific analysis Travel
+```{r}
+count = data %>% group_by(JobRole) %>% count(BusinessTravel)
+jobcount = data %>% count(JobRole)
+
+count %>% mutate(pct = prop.table(n)) %>% ggplot(aes(fill = BusinessTravel, y = pct, x = JobRole, label = scales::percent(pct))) + geom_bar(position = 'fill', stat = 'identity') + coord_flip() + geom_text(position = position_dodge(width = .5), vjust = -0.0, size = 3)
+
+count %>% mutate(pct = prop.table(n)) %>% ggplot(aes(fill = BusinessTravel, y = pct, x = JobRole, label = scales::percent(pct))) + geom_bar(position = 'dodge', stat = 'identity') + coord_flip() + geom_text(position = position_dodge(width = .7), vjust = 0.5, hjust = 0.0, size = 4)
+```
+
+# Most involved jobs
+```{r}
+involved_count = data %>% group_by(JobRole) %>% count(JobInvolvement)
+involved_count$JobInvolvement = factor(involved_count$JobInvolvement)
+involved_count %>% mutate(pct = prop.table(n)) %>% ggplot(aes(fill = JobInvolvement, y = n, x = JobRole, label = scales::percent(pct))) + geom_bar(position = 'dodge', stat = 'identity', ) + coord_flip() + geom_text(position = position_dodge(width = .7), vjust = 0.5, hjust = 0.0, size = 4)
+
+```
+
+# Job Specific analysis Marital Status
+```{r}
+marital_count = data %>% group_by(JobRole) %>% count(MaritalStatus)
+marital_count %>% ggplot(aes(fill = MaritalStatus, y = n, x = JobRole)) + geom_bar(position = 'fill', stat = 'identity') + coord_flip()
+```
+
+# Overtime by job role (Where we need to hire more people)
+```{r}
+ot_count = data %>% group_by(JobRole) %>% count(OverTime)
+ot_count %>% ggplot(aes(fill = OverTime, y = n, x = JobRole)) + geom_bar(position = 'fill', stat = 'identity') + coord_flip() + ggtitle('Overtime By Department') + ylab('Percentage of Employees') + scale_y_continuous(labels = scales::percent)
+```
+
+# Overtime by job level (Where we need to hire more people)
+```{r}
+ot_count = data %>% group_by(JobLevel) %>% count(OverTime)
+ot_count %>% ggplot(aes(fill = OverTime, y = n, x = JobLevel)) + geom_bar(position = 'fill', stat = 'identity') + coord_flip() + ggtitle('Overtime By Job Level') + ylab('Percentage of Employees') + scale_y_continuous(labels = scales::percent)
+```
+
+# Environment satisfaction by job level (Where we need to hire more people)
+```{r}
+sat_count = data %>% group_by(JobLevel) %>% count(EnvironmentSatisfaction)
+sat_count %>% ggplot(aes(fill = EnvironmentSatisfaction, y = n, x = JobLevel)) + geom_bar(position = 'fill', stat = 'identity') + coord_flip() + ggtitle('Environment Satisfaction By Job Level') + ylab('Percentage of Employees') + scale_y_continuous(labels = scales::percent)
+```
+
+# WorkLifeBalance by Department
+```{r}
+wl_count = data %>% group_by(JobRole) %>% count(WorkLifeBalance)
+wl_count$WorkLifeBalance = as.factor(wl_count$WorkLifeBalance)
+
+wl_count %>% mutate(pct = prop.table(n)) %>% ggplot(aes(fill = wl_count$WorkLifeBalance, y = n, x = JobRole, label = scales::percent(pct))) + geom_bar(position = 'dodge', stat = 'identity') + coord_flip() + ggtitle('Work-Life Balance By Department') + ylab('Percentage of Employees') + scale_y_continuous(labels = scales::percent) + geom_text(position = position_dodge(width = .7), vjust = 0.5, hjust = 0.0, size = 4)
+
+```
+
+# Monthly income by job role
+```{r}
+data %>% ggplot() + geom_boxplot(aes(x = data$JobRole, y = data$MonthlyIncome, color = data$JobRole)) + coord_flip()
+```
+
+
+
+
+
+
+################################################ Other Trends ################################################################
+
+# Job involvement by environment satisfaction
+```{r}
+count = data %>% group_by(EnvironmentSatisfaction) %>% count(JobInvolvement)
+count$EnvironmentSatisfaction = factor(count$EnvironmentSatisfaction)
+count$JobInvolvement = factor(count$JobInvolvement)
+
+count %>% mutate(pct = prop.table(n)) %>% ggplot(aes(fill = EnvironmentSatisfaction, y = pct, x = JobInvolvement, label = scales::percent(pct))) + geom_bar(position = 'dodge', stat = 'identity') + coord_flip() + geom_text(position = position_dodge(width = 0.7))
+
+count %>% mutate(pct = prop.table(n)) %>% ggplot(aes(fill = JobInvolvement, y = pct, x = EnvironmentSatisfaction, label = scales::percent(pct))) + geom_bar(position = 'dodge', stat = 'identity') + coord_flip() + geom_text(position = position_dodge(width = 0.7))
+```
+
+# Job involvement by job satisfaction
+```{r}
+count = data %>% group_by(JobSatisfaction) %>% count(JobInvolvement)
+count$JobSatisfaction = factor(count$JobSatisfaction)
+count$JobInvolvement = factor(count$JobInvolvement)
+
+count %>% mutate(pct = prop.table(n)) %>% ggplot(aes(fill = JobSatisfaction, y = pct, x = JobInvolvement, label = scales::percent(pct))) + geom_bar(position = 'dodge', stat = 'identity') + coord_flip() + geom_text(position = position_dodge(width = 0.7))
+
+count %>% mutate(pct = prop.table(n)) %>% ggplot(aes(fill = JobInvolvement, y = pct, x = JobSatisfaction, label = scales::percent(pct))) + geom_bar(position = 'dodge', stat = 'identity') + coord_flip() + geom_text(position = position_dodge(width = 0.7))
+```
+
+# Monthly Income by job role and job satisfaction
+```{r}
+data %>% ggplot(aes(x = data$JobRole, y = data$MonthlyIncome, fill = factor(data$JobSatisfaction))) + geom_boxplot() + coord_flip()
+```
+
+# Monthly Income by job role and job involvement
+```{r}
+data %>% ggplot(aes(x = data$JobRole, y = data$MonthlyIncome, fill = factor(data$JobInvolvement))) + geom_boxplot() + coord_flip()
+```
+
+# percent salary hike by job role and job satisfaction
+```{r}
+data %>% ggplot(aes(x = data$JobRole, y = data$PercentSalaryHike, fill = factor(data$JobSatisfaction))) + geom_boxplot() + coord_flip()
+```
+
+# Percent salary hike by job role and job involvement
+```{r}
+data %>% ggplot(aes(x = data$JobRole, y = data$PercentSalaryHike, fill = factor(data$JobInvolvement))) + geom_boxplot() + coord_flip()
+```
+
+# Monthly Income by Education and job involvement
+```{r}
+data %>% ggplot(aes(x = factor(data$Education), y = data$MonthlyIncome, fill = factor(data$JobInvolvement))) + geom_boxplot() + coord_flip()
+```
+
+# Monthly Income by Education and jobrole
+```{r}
+data %>% ggplot(aes(x = factor(data$JobRole), y = data$MonthlyIncome, fill = factor(data$Education))) + geom_boxplot() + coord_flip()
+```
+
+
+##################################### END EDA ###################################
+
+
+
+
+
+
+
+########################################### CLASSIFICATION #################################################################
+
+# Create a classification algorithm using K-NN or Naive-Bayes
+# Import Libraries
+```{r}
+library(e1071)
+library(class)
+library(caret)
+library(mlbench)
+```
+
+# Reset data and check for missing values
+```{r}
+data = read.csv('C:/Users/Tpeng/OneDrive/Documents/SMU/Doing Data Science/Case Study 2/Unit 14 and 15 Case Study 2/CaseStudy2-data.csv', header = T)
+sum(is.na.data.frame(data))
+```
+
+# Factorize some of the numeric data
+```{r}
+data$Education = as.factor(data$Education)
+data$EnvironmentSatisfaction = as.factor(data$EnvironmentSatisfaction)
+data$JobInvolvement = as.factor(data$JobInvolvement)
+data$JobLevel = as.factor(data$JobLevel)
+data$JobSatisfaction = as.factor(data$JobSatisfaction)
+```
+
+# Split training data into training and test sets (to compare models, will train on full training set later)
+```{r}
+trainIndices = sample(seq(1:length(data$Attrition)), round(.8*length(data$Attrition)))
+trainData = data[trainIndices,]
+testData = data[-trainIndices,]
+```
+
+
+############################################# NAIVE-BAYES CLASSIFIER ##################################################
+
+# Train Naive-Bayes Classifier on trainData using only variables thought to be significant or potentially significant
+# This uses Numeric variables for some factored numeric data
+```{r}
+model = naiveBayes(x = trainData[c(2, 4:9, 12:22, 24:27, 29:36)], trainData$Attrition)
+CM = confusionMatrix(table(predict(model, testData[,c(2, 4:9, 12:22, 24:27, 29:36)]), testData$Attrition))
+CM
+```
+
+# Iteratively Remove variables using backward elimination
+# Remove PercentSalHike (25)
+```{r}
+model = naiveBayes(x = trainData[c(2, 4:9, 12:22, 24, 26:27, 29:36)], trainData$Attrition)
+CM = confusionMatrix(table(predict(model, testData[,c(2, 4:9, 12:22, 24, 26:27, 29:36)]), testData$Attrition))
+CM
+```
+
+# Remove StockOpts (29)
+```{r}
+model = naiveBayes(x = trainData[c(2, 4:9, 12:22, 24, 26:27, 30:36)], trainData$Attrition)
+CM = confusionMatrix(table(predict(model, testData[,c(2, 4:9, 12:22, 24, 26:27, 30:36)]), testData$Attrition))
+CM
+```
+
+# Remove YearssincePromotion (35)
+```{r}
+model = naiveBayes(x = trainData[c(2, 4:9, 12:22, 24, 26:27, 30:34, 36)], trainData$Attrition)
+CM = confusionMatrix(table(predict(model, testData[,c(2, 4:9, 12:22, 24, 26:27, 30:34, 36)]), testData$Attrition))
+CM
+```
+
+# Remove Trainingtimes (31)
+```{r}
+model = naiveBayes(x = trainData[c(2, 4:9, 12:22, 24, 26:27, 30, 32:34, 36)], trainData$Attrition)
+CM = confusionMatrix(table(predict(model, testData[,c(2, 4:9, 12:22, 24, 26:27, 30, 32:34, 36)]), testData$Attrition))
+CM
+```
+
+# Remove PerfRating (26)
+```{r}
+model = naiveBayes(x = trainData[c(2, 4:9, 12:22, 24, 27, 30, 32:34, 36)], trainData$Attrition)
+CM = confusionMatrix(table(predict(model, testData[,c(2, 4:9, 12:22, 24, 27, 30, 32:34, 36)]), testData$Attrition))
+CM
+```
+
+# Remove JobLevel (16)
+```{r}
+model = naiveBayes(x = trainData[c(2, 4:9, 12:15, 17:22, 24, 27, 30, 32:34, 36)], trainData$Attrition)
+CM = confusionMatrix(table(predict(model, testData[,c(2, 4:9, 12:15, 17:22, 24, 27, 30, 32:34, 36)]), testData$Attrition))
+CM
+```
+
+# Remove RelSatis (27)
+```{r}
+model = naiveBayes(x = trainData[c(2, 4:9, 12:15, 17:22, 24, 30, 32:34, 36)], trainData$Attrition)
+CM = confusionMatrix(table(predict(model, testData[,c(2, 4:9, 12:15, 17:22, 24, 30, 32:34, 36)]), testData$Attrition))
+CM
+```
+
+# Remove Daily Rate (5) 
+```{r}
+model = naiveBayes(x = trainData[c(2, 4, 6:9, 12:15, 17:22, 24, 30, 32:34, 36)], trainData$Attrition)
+CM = confusionMatrix(table(predict(model, testData[,c(2, 4, 6:9, 12:15, 17:22, 24, 30, 32:34, 36)]), testData$Attrition))
+CM
+```
+
+# Experiment with derived features
+```{r}
+derived_data = data
+
+derived_data$PerformanceRating = as.numeric(derived_data$PerformanceRating)
+derived_data$Education = as.numeric(derived_data$Education)
+derived_data$JobLevel = as.numeric(derived_data$JobLevel)
+
+#37
+derived_data$PerformancePromotion = derived_data$PerformanceRating * derived_data$YearsSinceLastPromotion
+#38
+derived_data$Potential = derived_data$Education * derived_data$JobLevel
+#39
+derived_data$YearsatCoinRole = derived_data$YearsAtCompany * derived_data$YearsInCurrentRole
+#40 
+derived_data$GoodManager = derived_data$RelationshipSatisfaction * derived_data$YearsWithCurrManager
+```
+
+# Create Train / Test Split with new derived data set
+```{r}
+derived_train = derived_data[trainIndices,]
+derived_test = derived_data[-trainIndices,]
+```
+
+
+### Final Naive-Bayes Model ###
+
+## Included derived features
+# Create a loop to resample data with new seed 100 times and get average acc, sens, spec
+```{r}
+accuracy = c(500)
+sensitivity = c(500)
+specificity = c(500)
+seeds = sample(0:10000, 500, replace = FALSE)
+i = 1
+
+while (i < 501){
+  set.seed(seeds[i])
+  trainIndices = sample(seq(1:length(derived_data$Attrition)), round(.8*length(derived_data$Attrition)))
+  trainSet = derived_data[trainIndices,]
+  testSet = derived_data[-trainIndices,]
+  
+  final_class_model = naiveBayes(x = trainSet[c(2, 4, 6, 7, 9, 12:15, 17:22, 24, 30, 32:34, 36, 38, 39)], trainSet$Attrition)
+  CM = confusionMatrix(table(predict(final_class_model, testSet[,c(2, 4, 6, 7, 9, 12:15, 17:22, 24, 30, 32:34, 36, 38, 39)]), testSet$Attrition))
+  accuracy[i] = CM$overall[1]
+  sensitivity[i] = CM$byClass[1]
+  specificity[i] = CM$byClass[2]
+  
+  i = i + 1
+}
+
+avg_acc = mean(accuracy)
+avg_sen = mean(sensitivity)
+avg_spec = mean(specificity)
+
+cat('The average accuracy is: ', avg_acc, '\n')
+cat('The average sensitivity is: ', avg_sen, '\n')
+cat('The average specificity is: ', avg_spec, '\n')
+```
+
+# Using the above model (best so far), output model performance and parameter estimates to determine the most significant factors
+```{r}
+final_class_model.summary = summary(final_class_model)
+final_class_model$tables
+```
+
+
+
+
+
+
+########################################### LOGISTIC REGRESSION CLASSIFIER ##########################################################################
+
+# Load libraries for logistic regression
+```{r}
+library(ISLR)
+library(gridExtra)
+```
+
+# Experiment with additional derived features for logistic regression analysis
+```{r}
+derived_data = data
+derived_data$PerformanceRating = as.numeric(derived_data$PerformanceRating)
+derived_data$Education = as.numeric(derived_data$Education)
+derived_data$JobLevel = as.numeric(derived_data$JobLevel)
+
+#37
+derived_data$PerformancePromotion = derived_data$PerformanceRating * derived_data$YearsSinceLastPromotion
+#38
+derived_data$Potential = derived_data$Education * derived_data$JobLevel
+#39
+derived_data$YearsatCoinRole = derived_data$YearsAtCompany * derived_data$YearsInCurrentRole
+#40 
+derived_data$GoodManager = as.numeric(derived_data$RelationshipSatisfaction) * derived_data$YearsWithCurrManager
+#41 
+derived_data$BinOver = as.numeric(ifelse(derived_data$OverTime == 'Yes', 1, 0))
+#42
+derived_data$EnvOver = derived_data$BinOver * as.numeric(derived_data$EnvironmentSatisfaction)
+```
+
+# Cast factored numeric data as numeric
+```{r}
+derived_data$EnvironmentSatisfaction = as.numeric(derived_data$EnvironmentSatisfaction)
+derived_data$JobSatisfaction = as.numeric(derived_data$JobSatisfaction)
+derived_data$JobInvolvement = as.numeric(derived_data$JobInvolvement)
+derived_data$PerformanceRating = as.numeric(derived_data$PerformanceRating)
+derived_data$RelationshipSatisfaction = as.numeric(derived_data$RelationshipSatisfaction)
+derived_data$Education = as.numeric(derived_data$Education)
+```
+
+# Standardize data for logistic regression
+```{r}
+standard_data = standardize(formula = Attrition ~ Age + BusinessTravel + DistanceFromHome + 
+                                   EnvironmentSatisfaction + HourlyRate + JobInvolvement + JobSatisfaction +
+                                   MaritalStatus + NumCompaniesWorked + OverTime + 
+                                   RelationshipSatisfaction + TotalWorkingYears + TrainingTimesLastYear + YearsAtCompany +
+                                   WorkLifeBalance + YearsInCurrentRole + YearsSinceLastPromotion + YearsWithCurrManager + 
+                                   YearsatCoinRole + JobRole + JobLevel + Potential + Education + Gender + MonthlyRate + DailyRate +
+                                   PerformanceRating + MonthlyIncome + PerformancePromotion + EducationField + Department + PercentSalaryHike +
+                                   StockOptionLevel + GoodManager + EnvOver -1, data = derived_data, family = binomial(link = 'logit'))
+```
+
+# Add categorical data back into standardized data frame
+```{r}
+standardized = data.frame('Attrition' = standard_data$data$Attrition, 'Age' = standard_data$data$Age, 
+                          'BusinessTravel' = derived_data$BusinessTravel, 'DistanceFromHome' = standard_data$data$DistanceFromHome,
+                          'EnvironmentSatisfaction'= standard_data$data$EnvironmentSatisfaction, 'HourlyRate'= standard_data$data$HourlyRate, 
+                          'JobInvolvement' = standard_data$data$JobInvolvement, 'JobSatisfaction'= standard_data$data$JobSatisfaction,
+                          'MaritalStatus' = derived_data$MaritalStatus, 'NumCompaniesWorked'= standard_data$data$NumCompaniesWorked,
+                          'OverTime' = derived_data$OverTime, 'RelationshipSatisfaction'= standard_data$data$RelationshipSatisfaction,
+                          'TotalWorkingYears'= standard_data$data$TotalWorkingYears, 
+                          'TrainingTimesLastYear'= standard_data$data$TrainingTimesLastYear, 'WorkLifeBalance' = standard_data$data$WorkLifeBalance,
+                          'YearsAtCompany' = standard_data$data$YearsAtCompany,
+                          'YearsInCurrentRole'= standard_data$data$YearsInCurrentRole, 
+                          'YearsSinceLastPromotion'= standard_data$data$YearsSinceLastPromotion, 
+                          'YearsWithCurrManager'= standard_data$data$YearsWithCurrManager, 'YearsatCoinRole'= standard_data$data$YearsatCoinRole,
+                          'JobRole'= derived_data$JobRole, 'JobLevel' = standard_data$data$JobLevel, 'Potential' = standard_data$data$Potential,
+                          'Education' = standard_data$data$Education, 'Gender' = derived_data$Gender, 
+                          'MonthlyRate' = standard_data$data$MonthlyRate, 'DailyRate' = standard_data$data$DailyRate,
+                          'PerformanceRating'= standard_data$data$PerformanceRating, 'MonthlyIncome'= standard_data$data$MonthlyIncome, 
+                          'PerformancePromotion'= standard_data$data$PerformancePromotion, 'EducationField'= derived_data$EducationField, 
+                          'Department'= derived_data$Department, 'PercentSalaryHike'= standard_data$data$PercentSalaryHike,
+                          'StockOptionLevel'= standard_data$data$StockOptionLevel, 'GoodManager' = standard_data$data$GoodManager, 
+                          'EnvOver' = standard_data$data$EnvOver)
+```
+
+# Determine which variables are correlated. Remove if correlation > 0.5
+```{r}
+correlationMatrix <- cor(standardized[,c(2, 4:8, 10, 12:20, 22:24, 26, 27, 29, 30, 33:36)])
+
+highlyCorrelated <- findCorrelation(correlationMatrix, cutoff = 0.5)
+print(highlyCorrelated)
+print(correlationMatrix)
+```
+
+# Remove Correlated variables
+```{r}
+reducedStandardized = standardized[, c(1, 3:15, 17, 21, 22, 24:29, 31:34, 36)]
+```
+
+
+####### 
+# Create training and test sets # Don't use
+```{r}
+trainIndices = sample(seq(1:length(derived_data$Attrition)), round(.8*length(derived_data$Attrition)))
+trainSet = reducedStandardized[trainIndices,]
+testSet = reducedStandardized[-trainIndices,]
+```
+######
+
+# Create training and test sets
+```{r}
+trainIndices = sample(seq(1:length(derived_data$Attrition)), round(.8*length(derived_data$Attrition)))
+trainSet = standardized[trainIndices,]
+testSet = standardized[-trainIndices,]
+```
+
+# Train and test logistic regression model and output its performance metrics. This model is capable of ascertaining the statistical significance of the relationships. 
+# FULL MODEL
+```{r}
+logistic_regression_model = glm(Attrition ~ Age + BusinessTravel + DailyRate + Department + DistanceFromHome + Education + 
+                                EducationField + Gender + EnvironmentSatisfaction + HourlyRate + JobInvolvement + JobLevel + JobRole +
+                                JobSatisfaction + MaritalStatus + MonthlyIncome + MonthlyRate + NumCompaniesWorked + OverTime + 
+                                PercentSalaryHike + PerformanceRating + RelationshipSatisfaction + StockOptionLevel + TotalWorkingYears + 
+                                TrainingTimesLastYear + YearsAtCompany + WorkLifeBalance + YearsInCurrentRole + YearsSinceLastPromotion +
+                                YearsWithCurrManager + Potential + YearsatCoinRole + PerformancePromotion + GoodManager + EnvOver -1,
+                                family = binomial(link = 'logit'), data = standardized)
+
+fitted.results = predict(logistic_regression_model, newdata = subset(testSet, select = c(1:36)), type = 'response')
+summary(logistic_regression_model)
+
+fitted.results = predict(logistic_regression_model, newdata = subset(testSet, select = c(1:36)), type = 'response')
+log.probs = as.data.frame(fitted.results)$fitted.results
+testSet$Prob_Attrition = log.probs
+fitted.results = ifelse(fitted.results > 0.5, 'Yes', 'No')
+
+misclass_error = mean(fitted.results != testSet$Attrition)
+fitted.df = as.data.frame(fitted.results)
+
+TruePosIndices = which(testSet$Attrition == 'Yes')
+TrueNegIndices = which(testSet$Attrition == 'No')
+
+TruePos = testSet[TruePosIndices,]
+TrueNeg = testSet[TrueNegIndices,]
+fitted.pos = as.data.frame(fitted.df[TruePosIndices,])
+fitted.neg = as.data.frame(fitted.df[TrueNegIndices,])
+
+sensitivity = mean(fitted.pos$`fitted.df[TruePosIndices, ]` == TruePos$Attrition)
+specificity = mean(fitted.neg$`fitted.df[TrueNegIndices, ]` == TrueNeg$Attrition)
+
+
+print(paste('Accuracy is ', 1 - misclass_error))
+print(paste('Sensitivity is ', sensitivity))
+print(paste('Specificity is ', specificity))
+```
+
+# Cross validation for FULL model
+```{r}
+accuracy = c(500)
+sensitivity = c(500)
+specificity = c(500)
+seeds = sample(0:10000, 500, replace = FALSE)
+i = 1
+
+while (i < 501){
+  set.seed(seeds[i])
+  trainIndices = sample(seq(1:length(derived_data$Attrition)), round(.8*length(derived_data$Attrition)))
+  trainSet = standardized[trainIndices,]
+  testSet = standardized[-trainIndices,]
+  
+logistic_regression_model = glm(Attrition ~ Age + BusinessTravel + DailyRate + Department + DistanceFromHome + Education + 
+                                EducationField + Gender + EnvironmentSatisfaction + HourlyRate + JobInvolvement + JobLevel + JobRole +
+                                JobSatisfaction + MaritalStatus + MonthlyIncome + MonthlyRate + NumCompaniesWorked + OverTime + 
+                                PercentSalaryHike + PerformanceRating + RelationshipSatisfaction + StockOptionLevel + TotalWorkingYears + 
+                                TrainingTimesLastYear + YearsAtCompany + WorkLifeBalance + YearsInCurrentRole + YearsSinceLastPromotion +
+                                YearsWithCurrManager + Potential + YearsatCoinRole + PerformancePromotion + GoodManager + EnvOver -1,
+                                family = binomial(link = 'logit'), data = standardized)
+
+fitted.results = predict(logistic_regression_model, newdata = subset(testSet, select = c(1:36)), type = 'response')
+log.probs = as.data.frame(fitted.results)$fitted.results
+testSet$Prob_Attrition = log.probs
+fitted.results = ifelse(fitted.results > 0.5, 'Yes', 'No')
+
+misclass_error = mean(fitted.results != testSet$Attrition)
+fitted.df = as.data.frame(fitted.results)
+
+TruePosIndices = which(testSet$Attrition == 'Yes')
+TrueNegIndices = which(testSet$Attrition == 'No')
+
+TruePos = testSet[TruePosIndices,]
+TrueNeg = testSet[TrueNegIndices,]
+fitted.pos = as.data.frame(fitted.df[TruePosIndices,])
+fitted.neg = as.data.frame(fitted.df[TrueNegIndices,])
+
+accuracy[i] = 1 - misclass_error
+sensitivity[i] = mean(fitted.pos$`fitted.df[TruePosIndices, ]` == TruePos$Attrition)
+specificity[i] = mean(fitted.neg$`fitted.df[TrueNegIndices, ]` == TrueNeg$Attrition)
+  
+  i = i + 1
+}
+
+avg_acc = mean(accuracy)
+avg_sen = mean(sensitivity)
+avg_spec = mean(specificity)
+
+print(paste('Accuracy is ', avg_acc))
+print(paste('Sensitivity is ', avg_sen))
+print(paste('Specificity is ', avg_spec))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+############################ BE ###########################################
+################################################################################ USE THIS FOR TOP 3 #############################
+# Create training and test sets
+```{r}
+trainIndices = sample(seq(1:length(derived_data$Attrition)), round(.8*length(derived_data$Attrition)))
+trainSet = standardized[trainIndices,]
+testSet = standardized[-trainIndices,]
+```
+
+# Correlated variables removed
+# Removed: BusinessTravel Education JobLevel PercentSalaryHike PerformanceRating MonthlyRate StockOptionLevel Gender YearsInCurrentRole MonthlyIncome
+#  HourlyRate DailyRate EducationField RelationshipSatisfaction
+# 1 = YES (TRUE POS) 0 = NO Department + 
+```{r}
+logistic_regression_model = glm(Attrition ~ DistanceFromHome + 
+                                EnvironmentSatisfaction + JobInvolvement + JobRole +
+                                JobSatisfaction + MaritalStatus + + NumCompaniesWorked + OverTime + 
+                                TotalWorkingYears + 
+                                TrainingTimesLastYear + WorkLifeBalance - 1,
+                                family = binomial(link = 'logit'), data = standardized)
+
+fitted.results = predict(logistic_regression_model, newdata = subset(testSet, select = c(1:36)), type = 'response')
+summary(logistic_regression_model)
+
+fitted.results = predict(logistic_regression_model, newdata = subset(testSet, select = c(1:36)), type = 'response')
+log.probs = as.data.frame(fitted.results)$fitted.results
+testSet$Prob_Attrition = log.probs
+fitted.results = ifelse(fitted.results > 0.5, 'Yes', 'No')
+
+misclass_error = mean(fitted.results != testSet$Attrition)
+fitted.df = as.data.frame(fitted.results)
+
+TruePosIndices = which(testSet$Attrition == 'Yes')
+TrueNegIndices = which(testSet$Attrition == 'No')
+
+TruePos = testSet[TruePosIndices,]
+TrueNeg = testSet[TrueNegIndices,]
+fitted.pos = as.data.frame(fitted.df[TruePosIndices,])
+fitted.neg = as.data.frame(fitted.df[TrueNegIndices,])
+
+sensitivity = mean(fitted.pos$`fitted.df[TruePosIndices, ]` == TruePos$Attrition)
+specificity = mean(fitted.neg$`fitted.df[TrueNegIndices, ]` == TrueNeg$Attrition)
+
+
+print(paste('Accuracy is ', 1 - misclass_error))
+print(paste('Sensitivity is ', sensitivity))
+print(paste('Specificity is ', specificity))
+```
+
+
+
+################################################################################ USE THIS FOR TOP 3 #############################
+# Cross validation for Reduced model
+```{r}
+accuracy = c(500)
+sensitivity = c(500)
+specificity = c(500)
+seeds = sample(0:10000, 500, replace = FALSE)
+i = 1
+
+while (i < 501){
+  set.seed(seeds[i])
+  trainIndices = sample(seq(1:length(derived_data$Attrition)), round(.7*length(derived_data$Attrition)))
+  trainSet = reducedStandardized[trainIndices,]
+  testSet = reducedStandardized[-trainIndices,]
+  
+logistic_regression_model = glm(Attrition ~ Department + DistanceFromHome + 
+                                EnvironmentSatisfaction + JobInvolvement + JobRole +
+                                JobSatisfaction + MaritalStatus + + NumCompaniesWorked + OverTime + 
+                                TotalWorkingYears + 
+                                TrainingTimesLastYear + WorkLifeBalance - 1,
+                                family = binomial(link = 'logit'), data = standardized)
+
+  fitted.results = predict(logistic_regression_model, newdata = subset(testSet, select = c(1:28)), type = 'response')
+  log.probs = as.data.frame(fitted.results)$fitted.results
+  testSet$Prob_Attrition = log.probs
+  fitted.results = ifelse(fitted.results > 0.5, 'Yes', 'No')
+  
+  misclass_error = mean(fitted.results != testSet$Attrition)
+  fitted.df = as.data.frame(fitted.results)
+  
+  TruePosIndices = which(testSet$Attrition == 'Yes')
+  TrueNegIndices = which(testSet$Attrition == 'No')
+  
+  TruePos = testSet[TruePosIndices,]
+  TrueNeg = testSet[TrueNegIndices,]
+  fitted.pos = as.data.frame(fitted.df[TruePosIndices,])
+  fitted.neg = as.data.frame(fitted.df[TrueNegIndices,])
+  
+  accuracy[i] = 1 - misclass_error
+  sensitivity[i] = mean(fitted.pos$`fitted.df[TruePosIndices, ]` == TruePos$Attrition)
+  specificity[i] = mean(fitted.neg$`fitted.df[TrueNegIndices, ]` == TrueNeg$Attrition)
+  
+  i = i + 1
+}
+
+avg_acc = mean(accuracy)
+avg_sen = mean(sensitivity)
+avg_spec = mean(specificity)
+
+print(paste('Accuracy is ', avg_acc))
+print(paste('Sensitivity is ', avg_sen))
+print(paste('Specificity is ', avg_spec))
+```
+
+### Create classification output predictions ###
+#### Read in test data ####
+```{r}
+class_test_data = read.csv(file = 'C:/Users/Tpeng/OneDrive/Documents/SMU/Doing Data Science/Case Study 2/Unit 14 and 15 Case Study 2/CaseStudy2CompSet No Attrition.csv', header = T)
+
+class_test_data
+```
+
+
+
+# Experiment with derived features
+```{r}
+class_test_data$Education = as.factor(class_test_data$Education)
+class_test_data$EnvironmentSatisfaction = as.factor(class_test_data$EnvironmentSatisfaction)
+class_test_data$JobInvolvement = as.factor(class_test_data$JobInvolvement)
+class_test_data$JobLevel = as.factor(class_test_data$JobLevel)
+class_test_data$JobSatisfaction = as.factor(class_test_data$JobSatisfaction)
+
+derived_test_data = class_test_data
+
+derived_test_data$PerformanceRating = as.numeric(derived_test_data$PerformanceRating)
+derived_test_data$Education = as.numeric(derived_test_data$Education)
+derived_test_data$JobLevel = as.numeric(derived_test_data$JobLevel)
+
+#37
+derived_test_data$PerformancePromotion = derived_test_data$PerformanceRating * derived_test_data$YearsSinceLastPromotion
+#38
+derived_test_data$Potential = derived_test_data$Education * derived_test_data$JobLevel
+#39
+derived_test_data$YearsatCoinRole = derived_test_data$YearsAtCompany * derived_test_data$YearsInCurrentRole
+#40 
+derived_test_data$GoodManager = derived_test_data$RelationshipSatisfaction * derived_test_data$YearsWithCurrManager
+```
+
+
+# Create predictions and write to CSV file
+```{r}
+test_predictions = predict(final_class_model, class_test_data)
+test_class_predictions = data.frame('ID' = class_test_data$ID, 'Attrition' = test_predictions)
+test_class_predictions
+write.csv(test_class_predictions, 'C:/Users/Tpeng/OneDrive/Documents/SMU/Doing Data Science/Case Study 2/Unit 14 and 15 Case Study 2/Case2PredictionsPengilly Attrition.csv')
+```
+
+
+
+
+
+
+
+########################################################## REGRESSION MODEL #########################################################################
+
+# Predict Salary (Monthly Income) Using MLR (then possibly LASSO, random forest, ensemble models, etc.
+
+# Backwards elimination
+# Import Libraries
+```{r}
+library(MASS)
+```
+
+
+# Create training and test sets # Don't use
+```{r}
+trainIndices = sample(seq(1:length(data$Attrition)), round(.8*length(data$Attrition)))
+trainData = data[trainIndices,]
+testData = data[-trainIndices,]
+```
+
+# Fit the model with ALL variables, excluding distancefromhome, employeecount, employeenumber, environmentsatisfaction, performanceRating, 
+# worklifebalance, yearssincelastpromotion, yearswithcurrentmanager
+```{r}
+regModel = lm(data = trainData, MonthlyIncome ~ Age + BusinessTravel + DailyRate + Department + Education + EducationField + Gender + HourlyRate +
+              JobInvolvement + JobLevel + JobRole + JobSatisfaction + MaritalStatus + MonthlyRate + NumCompaniesWorked + OverTime + 
+              PercentSalaryHike + RelationshipSatisfaction + StockOptionLevel + TotalWorkingYears + TrainingTimesLastYear + YearsAtCompany +
+              YearsInCurrentRole)
+step = stepAIC(regModel, direction = 'backward')
+```
+
+# Predict on test set
+```{r}
+predictions = as.data.frame(predict(step, data = testData))
+residuals = testData$MonthlyIncome - predictions
+n = length(testData$MonthlyIncome)
+RMSE = sqrt(sum((residuals^2)/n))
+RMSE
+mean(abs(residuals$`predict(step, data = testData)`))
+```
+
+########################### Stepwise ######################################
+# Fit the model with ALL variables, excluding employeecount, employeenumber, environmentsatisfaction, performanceRating, 
+# worklifebalance, yearssincelastpromotion, yearswithcurrentmanager
+# Removed MaritalStatus, RelationshipSatisfaction, YearsInCurrentRole
+```{r}
+regModel = lm(data = trainData, MonthlyIncome ~ Age + BusinessTravel + DailyRate + DistanceFromHome + Department + Education + EducationField + 
+              Gender + HourlyRate + JobInvolvement + JobLevel + JobRole + JobSatisfaction + MonthlyRate + 
+              NumCompaniesWorked + OverTime + PercentSalaryHike + StockOptionLevel + TotalWorkingYears +
+              TrainingTimesLastYear + YearsAtCompany)
+step = stepAIC(regModel, direction = 'both')
+step$anova
+```
+
+# Predict on test set
+```{r}
+predictions = as.data.frame(predict(step, data = testData))
+residuals = testData$MonthlyIncome - predictions
+n = length(testData$MonthlyIncome)
+RMSE = sqrt(sum((residuals^2)/n))
+RMSE
+```
+
+
+### Derived Variables included
+
+# Custom Model
+```{r}
+regModel = lm(data = trainData, MonthlyIncome ~ Age + BusinessTravel + DailyRate + DistanceFromHome + Department + Education + EducationField + 
+              Gender + HourlyRate + JobInvolvement + JobLevel + JobRole + MaritalStatus + JobSatisfaction + MonthlyRate + 
+              NumCompaniesWorked + OverTime + PercentSalaryHike + StockOptionLevel + TotalWorkingYears + WorkLifeBalance +
+              TrainingTimesLastYear + YearsAtCompany + YearsInCurrentRole + YearsSinceLastPromotion + YearsWithCurrManager)
+step = stepAIC(regModel, direction = 'both')
+step$anova
+```
+
+# Predict on test set
+```{r}
+predictions = as.data.frame(predict(step, data = testData))
+residuals = testData$MonthlyIncome - predictions
+n = length(testData$MonthlyIncome)
+RMSE = sqrt(sum((residuals^2)/n))
+RMSE
+```
+
+
+
+
+############################## LASSO REGRESSION #########################################
+# Import Libraries
+```{r}
+library(glmnet)
+library(fastDummies)
+```
+
+# Run a LASSO regression
+# Remove unused variables in dataset
+```{r}
+lasso_data = data[,c(-1, -3, -10, -11, -23, -28)]
+```
+
+```{r}
+# Ensure data is already split
+x_vars = model.matrix(MonthlyIncome~., lasso_data)[,-1]
+y_var = lasso_data$MonthlyIncome
+lambda_seq = 10^seq(2, -2, by = -.1)
+
+set.seed(75)
+trainIndices = sample(1:nrow(x_vars), nrow(x_vars)/2)
+x_test = (-trainIndices)
+y_test = y_var[-trainIndices]
+
+cv_output = cv.glmnet(x_vars[trainIndices,], y_var[trainIndices], alpha = 1, lambda = lambda_seq)
+
+best_lam = cv_output$lambda.min
+best_lam
+```
+
+# Run LASSO Regression
+```{r}
+lassoBest = glmnet(x_vars[trainIndices,], y_var[trainIndices], alpha = 1, lambda = best_lam)
+pred = predict(lassoBest, s = best_lam, newx = x_vars[-trainIndices,])
+final = cbind(y_var[-trainIndices], pred)
+```
+
+# Get RMSE 
+```{r}
+actual = y_var[-trainIndices]
+residuals = actual - pred
+n = length(pred)
+RMSE = sqrt(sum(actual - pred)^2/n)
+RMSE
+```
+
+# Create a loop to get an average RMSE value
+```{r}
+seeds = sample(0:10000, 500, replace = FALSE)
+RMSEs = c(500)
+resids = c(500)
+i = 1
+
+while (i < 501){
+  set.seed(seeds[i])
+  trainIndices = sample(1:nrow(x_vars), nrow(x_vars)/2)
+  x_test = (-trainIndices)
+  y_test = y_var[-trainIndices]
+
+  cv_output = cv.glmnet(x_vars[trainIndices,], y_var[trainIndices], alpha = 1, lambda = lambda_seq)
+  best_lam = cv_output$lambda.min
+
+  lassoBest = glmnet(x_vars[trainIndices,], y_var[trainIndices], alpha = 1, lambda = best_lam)
+  pred = predict(lassoBest, s = best_lam, newx = x_vars[-trainIndices,])
+
+  actual = y_var[-trainIndices]
+  residuals = actual - pred
+  resids[i] = abs(residuals)
+  n = length(pred)
+  RMSEs[i] = sqrt(sum(actual - pred)^2/n)
+  i = i + 1
+}
+mean(resids)
+mean(RMSEs)
+```
+
+
+#### Create test predictions
+# Import test set and manipulate it 
+```{r}
+test_reg_data = read.csv(file = 'C:/Users/Tpeng/OneDrive/Documents/SMU/Doing Data Science/Case Study 2/Unit 14 and 15 Case Study 2/CaseStudy2CompSet No Salary.csv', header = T)
+id = test_reg_data$ID
+test_reg_data = test_reg_data[,c(-1, -3, -10, -11, -22, -27)]
+
+MonthlyIncomedf = data.frame('MonthlyIncome' = matrix(0, ncol = 1, nrow = 300))
+test_reg_data1 = test_reg_data[,c(1:15)]
+test_reg_data2 = test_reg_data[,c(16:29)]
+test_reg_data = cbind(test_reg_data1, MonthlyIncomedf, test_reg_data2)
+```
+
+
+# Remove unused variables in dataset and create dummy vars
+```{r}
+test_x_vars = model.matrix(MonthlyIncome~., test_reg_data)[,-1]
+```
+
+# Refuses to knit
+<!-- # Predict on new data set and write to csv -->
+<!-- ```{r} -->
+<!-- pred = predict.glmnet(lassoBest, s = best_lam, newx = test_x_vars) -->
+<!-- regression_preds = data.frame('ID' = id, 'MonthlyIncome' = pred) -->
+<!-- colnames(regression_preds) = c('ID', 'MonthlyIncome') -->
+<!-- ``` -->
+
+<!-- # Write predictions to CSV -->
+<!-- ```{r} -->
+<!-- write.csv(regression_preds, file = 'C:/Users/Tpeng/OneDrive/Documents/SMU/Doing Data Science/Case Study 2/Unit 14 and 15 Case Study 2/Case2PredictionsPengilly Salary.csv') -->
+<!-- ``` -->
+
+######################################################################################################################################################
+
+
+
+
+
+
+
