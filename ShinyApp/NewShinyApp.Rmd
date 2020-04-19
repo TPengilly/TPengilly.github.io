@@ -14,6 +14,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(shiny)
 library(rmarkdown)
 library(ggplot2)
+library(tidyverse)
 
 ui <- fluidPage(
   
@@ -113,23 +114,27 @@ server <- function(input, output) {
     
     req(input$file)
     
-    df <- read.csv(input$file$datapath,
-                   header = input$header)
+    dataf <- as.data.frame(read.csv(input$file$datapath,
+                   header = input$header))
     
     if(input$disp == 'head')
     {
-      return(head(df))
+      return(head(dataf))
     }
     else {
-      return(df)
+      return(dataf)
     }
   })
   
   # Plot IBU data
   
   output$ibuplot <- renderPlot({
+    
+    dataf <- as.data.frame(read.csv(input$file$datapath,
+                   header = input$header))
+    
     if(input$select == 'histogram') {
-      x <- dataset$IBU
+      x <- dataf$IBU
       bins <- seq(min(x), max(x), length.out = input$ibubins + 1)
       
       hist(x, breaks = bins, col = '#75AADB', border = 'white',
@@ -137,7 +142,7 @@ server <- function(input, output) {
            main = 'Distribution of IBU')
     }
     if(input$select == 'boxplot') {
-      x <- dataset$IBU
+      x <- dataf$IBU
       boxplot(x, xlab = 'IBU', main = 'Boxplot of IBU')
     }
   })
@@ -146,8 +151,11 @@ server <- function(input, output) {
   
   output$abvplot <- renderPlot({
     
+    dataf <- as.data.frame(read.csv(input$file$datapath,
+                   header = input$header))
+    
     if(input$select == 'histogram') {
-      x <- dataset$ABV
+      x <- dataf$ABV
       bins <- seq(min(x), max(x), length.out = input$abvbins + 1)
       
       hist(x, breaks = bins, col = '#75AADB', border = 'white',
@@ -155,7 +163,7 @@ server <- function(input, output) {
            main = 'Distribution of ABV')
     }
     if(input$select == 'boxplot') {
-      x <- dataset$ABV
+      x <- dataf$ABV
       boxplot(x, xlab = 'ABV', main = 'Boxplot of ABV')
     }
   })
@@ -164,19 +172,22 @@ server <- function(input, output) {
   
   output$scatter <- renderPlot({
     
-    if(input$regline == TRUE) {
-      x = dataset$IBU
-      y = dataset$ABV
+    dataf <- as.data.frame(read.csv(input$file$datapath,
+                   header = input$header))
     
-      dataset %>% ggplot(aes(x = x, y = y)) + geom_point() + ggtitle('Scatter Plot of IBU vs ABV') + xlab('IBU') +  ylab('ABV') +
+    if(input$regline == TRUE) {
+      x = dataf$IBU
+      y = dataf$ABV
+    
+      dataf %>% ggplot(aes(x = x, y = y)) + geom_point() + ggtitle('Scatter Plot of IBU vs ABV') + xlab('IBU') +  ylab('ABV') +
         stat_smooth(method = 'lm', se = FALSE)
     }
     
     if(input$regline == FALSE) {
-      x = dataset$IBU
-      y = dataset$ABV
+      x = dataf$IBU
+      y = dataf$ABV
     
-      dataset %>% ggplot(aes(x = x, y = y)) + geom_point() + ggtitle('Scatter Plot of IBU vs ABV') + xlab('IBU') +  ylab('ABV')
+      dataf %>% ggplot(aes(x = x, y = y)) + geom_point() + ggtitle('Scatter Plot of IBU vs ABV') + xlab('IBU') +  ylab('ABV')
     }
   })
   
